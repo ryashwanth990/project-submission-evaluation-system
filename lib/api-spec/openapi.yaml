@@ -1,0 +1,697 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Project Submission & Evaluation System API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: projects
+    description: Project operations
+  - name: evaluations
+    description: Evaluation operations
+  - name: students
+    description: Student operations
+  - name: faculty
+    description: Faculty operations
+  - name: dashboard
+    description: Dashboard & summary operations
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Unauthorized
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List projects (filtered by role)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Submit a new project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get project by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/{id}/assign:
+    post:
+      operationId: assignEvaluator
+      tags: [projects]
+      summary: Assign a faculty evaluator to a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AssignEvaluatorInput"
+      responses:
+        "200":
+          description: Assigned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /evaluations:
+    get:
+      operationId: listEvaluations
+      tags: [evaluations]
+      summary: List evaluations (for current faculty)
+      responses:
+        "200":
+          description: List of evaluations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Evaluation"
+    post:
+      operationId: createEvaluation
+      tags: [evaluations]
+      summary: Submit an evaluation for a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvaluationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Evaluation"
+
+  /evaluations/{id}:
+    get:
+      operationId: getEvaluation
+      tags: [evaluations]
+      summary: Get evaluation by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Evaluation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Evaluation"
+    patch:
+      operationId: updateEvaluation
+      tags: [evaluations]
+      summary: Update an evaluation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EvaluationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Evaluation"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard summary stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent project activity
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /faculty:
+    get:
+      operationId: listFaculty
+      tags: [faculty]
+      summary: List all faculty members
+      responses:
+        "200":
+          description: List of faculty
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: List all students
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    MessageResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    RegisterInput:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        role:
+          type: string
+          enum: [student, faculty]
+        usn:
+          type: ["string", "null"]
+        department:
+          type: ["string", "null"]
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [user, token]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+
+    User:
+      type: object
+      required: [id, name, email, role, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        usn:
+          type: ["string", "null"]
+        department:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    ProjectInput:
+      type: object
+      required: [title, description, domain]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        domain:
+          type: string
+        githubUrl:
+          type: ["string", "null"]
+        reportUrl:
+          type: ["string", "null"]
+        teamMembers:
+          type: ["string", "null"]
+        semester:
+          type: ["string", "null"]
+        academicYear:
+          type: ["string", "null"]
+
+    ProjectUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        domain:
+          type: string
+        githubUrl:
+          type: ["string", "null"]
+        reportUrl:
+          type: ["string", "null"]
+        teamMembers:
+          type: ["string", "null"]
+        status:
+          type: string
+        semester:
+          type: ["string", "null"]
+        academicYear:
+          type: ["string", "null"]
+
+    AssignEvaluatorInput:
+      type: object
+      required: [facultyId]
+      properties:
+        facultyId:
+          type: integer
+
+    Project:
+      type: object
+      required: [id, title, description, domain, status, studentId, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        domain:
+          type: string
+        status:
+          type: string
+        studentId:
+          type: integer
+        studentName:
+          type: ["string", "null"]
+        evaluatorId:
+          type: ["integer", "null"]
+        evaluatorName:
+          type: ["string", "null"]
+        githubUrl:
+          type: ["string", "null"]
+        reportUrl:
+          type: ["string", "null"]
+        teamMembers:
+          type: ["string", "null"]
+        semester:
+          type: ["string", "null"]
+        academicYear:
+          type: ["string", "null"]
+        averageScore:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ProjectDetail:
+      type: object
+      required: [id, title, description, domain, status, studentId, createdAt, updatedAt, evaluations]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        domain:
+          type: string
+        status:
+          type: string
+        studentId:
+          type: integer
+        studentName:
+          type: ["string", "null"]
+        evaluatorId:
+          type: ["integer", "null"]
+        evaluatorName:
+          type: ["string", "null"]
+        githubUrl:
+          type: ["string", "null"]
+        reportUrl:
+          type: ["string", "null"]
+        teamMembers:
+          type: ["string", "null"]
+        semester:
+          type: ["string", "null"]
+        academicYear:
+          type: ["string", "null"]
+        averageScore:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        evaluations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Evaluation"
+
+    EvaluationInput:
+      type: object
+      required: [projectId, score, feedback]
+      properties:
+        projectId:
+          type: integer
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+        feedback:
+          type: string
+        innovationScore:
+          type: ["number", "null"]
+        technicalScore:
+          type: ["number", "null"]
+        presentationScore:
+          type: ["number", "null"]
+        documentationScore:
+          type: ["number", "null"]
+
+    EvaluationUpdate:
+      type: object
+      properties:
+        score:
+          type: number
+        feedback:
+          type: string
+        innovationScore:
+          type: ["number", "null"]
+        technicalScore:
+          type: ["number", "null"]
+        presentationScore:
+          type: ["number", "null"]
+        documentationScore:
+          type: ["number", "null"]
+
+    Evaluation:
+      type: object
+      required: [id, projectId, facultyId, score, feedback, createdAt]
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        facultyId:
+          type: integer
+        facultyName:
+          type: ["string", "null"]
+        score:
+          type: number
+        feedback:
+          type: string
+        innovationScore:
+          type: ["number", "null"]
+        technicalScore:
+          type: ["number", "null"]
+        presentationScore:
+          type: ["number", "null"]
+        documentationScore:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    DashboardStats:
+      type: object
+      required: [totalProjects, pendingReview, evaluated, averageScore, byDomain, byStatus]
+      properties:
+        totalProjects:
+          type: integer
+        pendingReview:
+          type: integer
+        evaluated:
+          type: integer
+        averageScore:
+          type: ["number", "null"]
+        byDomain:
+          type: array
+          items:
+            $ref: "#/components/schemas/DomainCount"
+        byStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/StatusCount"
+
+    DomainCount:
+      type: object
+      required: [domain, count]
+      properties:
+        domain:
+          type: string
+        count:
+          type: integer
+
+    StatusCount:
+      type: object
+      required: [status, count]
+      properties:
+        status:
+          type: string
+        count:
+          type: integer
+
+    ActivityItem:
+      type: object
+      required: [id, type, message, createdAt]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        message:
+          type: string
+        projectId:
+          type: ["integer", "null"]
+        projectTitle:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
