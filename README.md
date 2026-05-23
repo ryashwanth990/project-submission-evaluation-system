@@ -30,7 +30,7 @@ The **Project Submission & Evaluation System** is a full-stack web application d
 
 ## Live Website
 
-🔗 **[https://project-submission-evaluation-system.replit.app](https://project-submission-evaluation-system.replit.app)**
+🔗 **[https://web-portal-admin--alphacourse401.replit.app/](https://web-portal-admin--alphacourse401.replit.app/)**
 
 ### Demo Credentials
 
