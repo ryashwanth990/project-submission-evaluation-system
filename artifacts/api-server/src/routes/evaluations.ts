@@ -11,6 +11,85 @@ import { requireAuth, type AuthRequest } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
 
+router.get("/evaluations/export", requireAuth, async (req: AuthRequest, res): Promise<void> => {
+  const user = req.user!;
+  const format = (req.query.format as string) || "csv";
+
+  const conditions = user.role === "faculty" ? [eq(evaluationsTable.facultyId, user.id)] : [];
+
+  const rows = await db
+    .select({
+      evalId: evaluationsTable.id,
+      projectId: evaluationsTable.projectId,
+      projectTitle: projectsTable.title,
+      projectDomain: projectsTable.domain,
+      projectStatus: projectsTable.status,
+      semester: projectsTable.semester,
+      academicYear: projectsTable.academicYear,
+      studentName: usersTable.name,
+      facultyName: usersTable.name,
+      score: evaluationsTable.score,
+      innovationScore: evaluationsTable.innovationScore,
+      technicalScore: evaluationsTable.technicalScore,
+      presentationScore: evaluationsTable.presentationScore,
+      documentationScore: evaluationsTable.documentationScore,
+      feedback: evaluationsTable.feedback,
+      evaluatedAt: evaluationsTable.createdAt,
+    })
+    .from(evaluationsTable)
+    .leftJoin(projectsTable, eq(evaluationsTable.projectId, projectsTable.id))
+    .leftJoin(usersTable, eq(evaluationsTable.facultyId, usersTable.id))
+    .where(conditions.length > 0 ? conditions[0] : undefined as any);
+
+  const studentMap: Record<number, string> = {};
+  const projectIds = [...new Set(rows.map(r => r.projectId).filter(Boolean))] as number[];
+  if (projectIds.length > 0) {
+    const students = await db
+      .select({ id: projectsTable.id, name: usersTable.name })
+      .from(projectsTable)
+      .leftJoin(usersTable, eq(projectsTable.studentId, usersTable.id))
+      .where(eq(projectsTable.id, projectIds[0]));
+    for (const s of students) studentMap[s.id] = s.name ?? "";
+
+    for (const pid of projectIds.slice(1)) {
+      const [s] = await db
+        .select({ id: projectsTable.id, name: usersTable.name })
+        .from(projectsTable)
+        .leftJoin(usersTable, eq(projectsTable.studentId, usersTable.id))
+        .where(eq(projectsTable.id, pid));
+      if (s) studentMap[s.id] = s.name ?? "";
+    }
+  }
+
+  if (format === "csv") {
+    const escape = (v: unknown) => {
+      const s = v == null ? "" : String(v);
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+    const headers = [
+      "Eval ID", "Project ID", "Project Title", "Domain", "Status",
+      "Semester", "Academic Year", "Student Name", "Evaluated By",
+      "Overall Score", "Innovation", "Technical", "Presentation", "Documentation",
+      "Feedback", "Evaluated At",
+    ];
+    const csvRows = rows.map(r => [
+      r.evalId, r.projectId, r.projectTitle, r.projectDomain, r.projectStatus,
+      r.semester, r.academicYear, studentMap[r.projectId ?? -1] ?? "",
+      r.facultyName, r.score, r.innovationScore, r.technicalScore,
+      r.presentationScore, r.documentationScore, r.feedback,
+      r.evaluatedAt ? new Date(r.evaluatedAt).toISOString() : "",
+    ].map(escape).join(","));
+
+    const csv = [headers.map(h => `"${h}"`).join(","), ...csvRows].join("\n");
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="evaluation-report-${Date.now()}.csv"`);
+    res.send(csv);
+    return;
+  }
+
+  res.json(rows);
+});
+
 router.get("/evaluations", requireAuth, async (req: AuthRequest, res): Promise<void> => {
   const user = req.user!;
   const conditions = user.role === "faculty" ? [eq(evaluationsTable.facultyId, user.id)] : [];
