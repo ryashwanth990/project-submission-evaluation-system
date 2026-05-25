@@ -10,7 +10,7 @@ Academic Year: 2025-26 (IV Semester)
 | Hithesh Kundar | 4SF24CI061 |
 | Pavan D P | 4SF24CI116 |
 
-**Faculty In-charge:** Mr. Ganaraj K
+**Faculty In-charge:** Mr. Shashidhar
 
 ---
 
@@ -30,13 +30,13 @@ The **Project Submission & Evaluation System** is a full-stack web application d
 
 ## Live Website
 
-🔗 **[https://web-portal-admin--alphacourse401.replit.app/](https://web-portal-admin--alphacourse401.replit.app/)**
+🔗 **[https://project-submission-evaluation-system.replit.app](https://project-submission-evaluation-system.replit.app)**
 
 ### Demo Credentials
 
 | Role | Email | Password |
 |---|---|---|
-| Faculty | ganaraj@sahyadri.edu.in | faculty123 |
+| Faculty | shashidhar@sahyadri.edu.in | faculty123 |
 | Faculty | priya@sahyadri.edu.in | faculty456 |
 | Student | hithesh@student.sahyadri.edu.in | student123 |
 | Student | pavan@student.sahyadri.edu.in | student456 |
