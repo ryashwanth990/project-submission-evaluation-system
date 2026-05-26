@@ -30,7 +30,7 @@ The **Project Submission & Evaluation System** is a full-stack web application d
 
 ## Live Website
 
-🔗 **[https://project-submission-evaluation-system.replit.app](https://project-submission-evaluation-system.replit.app)**
+🔗 https://web-portal-admin--alphacourse401.replit.app/
 
 ### Demo Credentials
 
@@ -47,9 +47,9 @@ The **Project Submission & Evaluation System** is a full-stack web application d
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, Vite, TypeScript, Tailwind CSS v4 |
-| Backend | Node.js 24, Express 5, TypeScript |
-| Database | PostgreSQL (Replit managed) |
+| Frontend | java, TypeScript |
+| Backend | Node.js 24, Exprek 5, TypeScript |
+| Database | PostgreSQL  |
 | ORM | Drizzle ORM |
 | Validation | Zod |
 | API Client | Orval (OpenAPI codegen → React Query hooks) |
