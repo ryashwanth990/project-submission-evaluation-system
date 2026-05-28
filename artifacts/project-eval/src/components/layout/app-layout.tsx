@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { useLogout } from "@workspace/api-client-react";
-import { LayoutDashboard, FileText, ListChecks, LogOut, CheckCircle } from "lucide-react";
+import { LayoutDashboard, FileText, ListChecks, LogOut, CheckCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
@@ -19,14 +19,26 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const navItems = [
-    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { label: "Projects", href: "/projects", icon: FileText },
-  ];
+  const navItems: { label: string; href: string; icon: any }[] = [];
 
-  if (user?.role === "faculty") {
-    navItems.push({ label: "Evaluations", href: "/evaluations", icon: ListChecks });
+  if (user?.role === "admin") {
+    navItems.push({ label: "Admin Portal", href: "/admin", icon: ShieldCheck });
+    navItems.push({ label: "Projects", href: "/projects", icon: FileText });
+  } else {
+    navItems.push({ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard });
+    navItems.push({ label: "Projects", href: "/projects", icon: FileText });
+    if (user?.role === "faculty") {
+      navItems.push({ label: "Evaluations", href: "/evaluations", icon: ListChecks });
+    }
   }
+
+  const roleBadge =
+    user?.role === "admin" ? "Admin" : user?.role === "faculty" ? "Faculty" : "Student";
+
+  const roleColor =
+    user?.role === "admin"
+      ? "bg-amber-500/20 text-amber-200 border-amber-500/30"
+      : "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-accent-border";
 
   return (
     <div className="flex min-h-screen bg-background text-foreground font-sans">
@@ -47,7 +59,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             {navItems.map((item) => {
               const isActive = location === item.href || location.startsWith(`${item.href}/`);
               return (
-                <Link key={item.href} href={item.href} className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${isActive ? "bg-sidebar-primary text-sidebar-primary-foreground" : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  }`}
+                >
                   <item.icon className="h-4 w-4" />
                   {item.label}
                 </Link>
@@ -60,12 +80,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="px-2 mb-4">
             <p className="text-sm font-medium text-white">{user?.name}</p>
             <p className="text-xs text-sidebar-foreground/70 truncate">{user?.email}</p>
-            <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-sidebar-accent text-sidebar-accent-foreground border border-sidebar-accent-border">
-              {user?.role === "faculty" ? "Faculty" : "Student"}
+            <div className={`mt-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${roleColor}`}>
+              {roleBadge}
             </div>
           </div>
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full justify-start text-sidebar-foreground/80 hover:text-white hover:bg-sidebar-accent"
             onClick={handleLogout}
             data-testid="button-logout"
