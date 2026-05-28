@@ -2,7 +2,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Link, useLocation } from "wouter";
+import { Link } from "wouter";
 import { CheckCircle } from "lucide-react";
 import { useLogin } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth";
@@ -25,7 +25,6 @@ const loginSchema = z.object({
 });
 
 export default function Login() {
-  const [_, setLocation] = useLocation();
   const { login } = useAuth();
   const { toast } = useToast();
   const loginMutation = useLogin();
@@ -44,7 +43,6 @@ export default function Login() {
       {
         onSuccess: (res) => {
           login(res.token, res.user);
-          setLocation(res.user.role === "admin" ? "/admin" : "/dashboard");
         },
         onError: (err: any) => {
           toast({
