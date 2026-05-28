@@ -16,31 +16,32 @@ Academic Year: 2025-26 (IV Semester)
 
 ## Project Description
 
-The **Project Submission & Evaluation System** is a full-stack web application designed to manage student project submissions and their evaluation process. It provides a structured way for students to submit academic projects and for faculty to evaluate them with detailed scoring across multiple criteria.
+The **Project Submission & Evaluation System** is a full-stack web application designed to manage student project submissions and their evaluation process. It provides a structured workflow where students submit academic projects, admins assign faculty evaluators, and faculty submit detailed scored evaluations.
 
 ### Features
 
+- **Admin Portal** — Assign faculty evaluators to submitted projects, reassign evaluators, and view all projects with assignment status at a glance
 - **Student Portal** — Register, login, submit projects with metadata (title, description, domain, GitHub URL, team members, semester)
-- **Faculty Portal** — Review assigned projects, submit evaluations with scores across Innovation, Technical, Presentation, and Documentation dimensions
+- **Faculty Portal** — Review assigned projects, submit evaluations with scores across Innovation, Technical, Presentation, and Documentation dimensions; export evaluation reports as CSV or PDF
 - **Dashboard** — Role-aware statistics: total projects, pending reviews, average scores, domain breakdowns
-- **Project Management** — Full CRUD for projects, evaluator assignment, status tracking (Submitted → Under Review → Evaluated)
+- **Project Management** — Full CRUD for projects, status tracking (Submitted → Under Review → Evaluated → Approved/Rejected)
 - **Activity Feed** — Real-time activity log of recent submissions, assignments, and evaluations
 
 ---
 
 ## Live Website
 
-🔗 https://web-portal-admin--alphacourse401.replit.app/
+🔗 **[https://project-submission-evaluation-system.replit.app](https://project-submission-evaluation-system.replit.app)**
 
 ### Demo Credentials
 
-| Role | Email | Password |
-|---|---|---|
-| Admin | admin@sahyadri.edu.in | admin123 |
-| Faculty | shashidhar@sahyadri.edu.in | faculty123 |
-| Faculty | priya@sahyadri.edu.in | faculty456 |
-| Student | hithesh@student.sahyadri.edu.in | student123 |
-| Student | pavan@student.sahyadri.edu.in | student456 |
+| Role | Email | Password | Access |
+|---|---|---|---|
+| Admin | admin@sahyadri.edu.in | admin123 | Assign evaluators to projects |
+| Faculty | shashidhar@sahyadri.edu.in | faculty123 | Evaluate projects, export reports |
+| Faculty | priya@sahyadri.edu.in | faculty456 | Evaluate projects, export reports |
+| Student | hithesh@student.sahyadri.edu.in | student123 | Submit and track projects |
+| Student | pavan@student.sahyadri.edu.in | student456 | Submit and track projects |
 
 ---
 
@@ -48,14 +49,24 @@ The **Project Submission & Evaluation System** is a full-stack web application d
 
 | Layer | Technology |
 |---|---|
-| Frontend | java, TypeScript |
-| Backend | Node.js 24, Exprek 5, TypeScript |
-| Database | PostgreSQL  |
+| Frontend | React 19, Vite, TypeScript, Tailwind CSS v4 |
+| Backend | Node.js 24, Express 5, TypeScript |
+| Database | PostgreSQL (Replit managed) |
 | ORM | Drizzle ORM |
 | Validation | Zod |
 | API Client | Orval (OpenAPI codegen → React Query hooks) |
 | Auth | JWT (jsonwebtoken) + PBKDF2 password hashing |
 | UI Components | shadcn/ui, Radix UI, Lucide Icons |
+
+---
+
+## User Roles
+
+| Role | Description |
+|---|---|
+| `admin` | System administrator. Can assign and reassign faculty evaluators to any project. Has access to Admin Portal and all Projects. |
+| `faculty` | Evaluator. Can view assigned projects, submit evaluations with detailed scoring, update project status, and export evaluation reports. |
+| `student` | Can register, submit projects, and track their submission status and evaluation results. |
 
 ---
 
@@ -68,8 +79,8 @@ The **Project Submission & Evaluation System** is a full-stack web application d
 - `name` TEXT NOT NULL
 - `email` TEXT UNIQUE NOT NULL
 - `password_hash` TEXT NOT NULL
-- `role` TEXT NOT NULL — `student` or `faculty`
-- `usn` TEXT — Student University Serial Number (students only)
+- `role` TEXT NOT NULL — `student`, `faculty`, or `admin`
+- `usn` TEXT — University Serial Number (students only)
 - `department` TEXT
 - `created_at` TIMESTAMPTZ
 
@@ -80,7 +91,7 @@ The **Project Submission & Evaluation System** is a full-stack web application d
 - `domain` TEXT NOT NULL — AI/ML, Web Dev, App Dev, IoT, Data Science, Cybersecurity, Other
 - `status` TEXT NOT NULL — `submitted`, `under_review`, `evaluated`, `approved`, `rejected`
 - `student_id` INTEGER → users(id)
-- `evaluator_id` INTEGER → users(id) (nullable)
+- `evaluator_id` INTEGER → users(id) (nullable — assigned by admin)
 - `github_url` TEXT
 - `report_url` TEXT
 - `team_members` TEXT
@@ -123,9 +134,9 @@ project-submission-evaluation-system/
 │   │       └── routes/      # auth, projects, evaluations, dashboard, users
 │   └── project-eval/        # React + Vite frontend
 │       └── src/
-│           ├── components/  # UI components (shadcn/ui)
+│           ├── components/  # UI components (shadcn/ui, layout)
 │           ├── lib/         # auth context, API setup
-│           └── pages/       # login, register, dashboard, projects, evaluations
+│           └── pages/       # login, register, admin, dashboard, projects, evaluations
 ├── lib/
 │   ├── api-spec/            # OpenAPI spec (source of truth)
 │   ├── api-client-react/    # Generated React Query hooks
@@ -196,32 +207,48 @@ PORT=3000 BASE_PATH=/ pnpm --filter @workspace/project-eval run dev
 
 Visit **http://localhost:3000** in your browser.
 
-Register as a student or faculty member to get started.
-
 ---
 
 ## API Endpoints
 
-| Method | Path | Description | Auth |
-|--------|------|-------------|------|
-| POST | `/api/auth/register` | Register new user | No |
-| POST | `/api/auth/login` | Login | No |
-| POST | `/api/auth/logout` | Logout | No |
-| GET | `/api/auth/me` | Get current user | Yes |
-| GET | `/api/projects` | List projects | Yes |
-| POST | `/api/projects` | Submit project | Student |
-| GET | `/api/projects/:id` | Get project detail | Yes |
-| PATCH | `/api/projects/:id` | Update project | Yes |
-| DELETE | `/api/projects/:id` | Delete project | Yes |
-| POST | `/api/projects/:id/assign` | Assign evaluator | Faculty |
-| GET | `/api/evaluations` | List evaluations | Yes |
-| POST | `/api/evaluations` | Submit evaluation | Faculty |
-| GET | `/api/evaluations/:id` | Get evaluation | Yes |
-| PATCH | `/api/evaluations/:id` | Update evaluation | Faculty |
-| GET | `/api/dashboard/stats` | Dashboard stats | Yes |
-| GET | `/api/dashboard/recent-activity` | Recent activity | Yes |
-| GET | `/api/faculty` | List faculty | Yes |
-| GET | `/api/students` | List students | Yes |
+### Authentication
+
+| Method | Path | Description | Auth Required |
+|--------|------|-------------|---------------|
+| POST | `/api/auth/register` | Register a new user (student or faculty) | No |
+| POST | `/api/auth/login` | Login and receive a JWT token | No |
+| POST | `/api/auth/logout` | Logout (clears session) | No |
+| GET | `/api/auth/me` | Get the currently authenticated user | Yes |
+
+### Projects
+
+| Method | Path | Description | Auth Required |
+|--------|------|-------------|---------------|
+| GET | `/api/projects` | List all projects (filtered by role) | Yes |
+| POST | `/api/projects` | Submit a new project | Student only |
+| GET | `/api/projects/:id` | Get full project details with evaluations | Yes |
+| PATCH | `/api/projects/:id` | Update project details or status | Yes |
+| DELETE | `/api/projects/:id` | Delete a project | Yes |
+| POST | `/api/projects/:id/assign` | Assign a faculty evaluator to a project | **Admin only** |
+
+### Evaluations
+
+| Method | Path | Description | Auth Required |
+|--------|------|-------------|---------------|
+| GET | `/api/evaluations` | List evaluations (faculty sees own; admin sees all) | Yes |
+| POST | `/api/evaluations` | Submit a new evaluation for a project | Faculty only |
+| GET | `/api/evaluations/:id` | Get a specific evaluation | Yes |
+| PATCH | `/api/evaluations/:id` | Update an existing evaluation | Faculty only |
+| GET | `/api/evaluations/export` | Export evaluations as CSV file | Yes |
+
+### Dashboard & Users
+
+| Method | Path | Description | Auth Required |
+|--------|------|-------------|---------------|
+| GET | `/api/dashboard/stats` | Get role-aware dashboard statistics | Yes |
+| GET | `/api/dashboard/recent-activity` | Get recent system activity feed | Yes |
+| GET | `/api/faculty` | List all faculty members | Yes |
+| GET | `/api/students` | List all students | Yes |
 
 ---
 
