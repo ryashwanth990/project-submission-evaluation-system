@@ -5,7 +5,6 @@ import { z } from "zod";
 import { Link, useLocation } from "wouter";
 import { CheckCircle } from "lucide-react";
 import { useRegister, RegisterInputRole } from "@workspace/api-client-react";
-import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +38,6 @@ const registerSchema = z.object({
 
 export default function Register() {
   const [_, setLocation] = useLocation();
-  const { login } = useAuth();
   const { toast } = useToast();
   const registerMutation = useRegister();
 
@@ -61,9 +59,12 @@ export default function Register() {
     registerMutation.mutate(
       { data: data as any },
       {
-        onSuccess: (res) => {
-          login(res.token, res.user);
-          setLocation("/dashboard");
+        onSuccess: () => {
+          toast({
+            title: "Account created!",
+            description: "You can now sign in with your credentials.",
+          });
+          setLocation("/login");
         },
         onError: (err: any) => {
           toast({
