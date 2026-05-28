@@ -44,7 +44,7 @@ export default function Login() {
       {
         onSuccess: (res) => {
           login(res.token, res.user);
-          setLocation("/dashboard");
+          setLocation(res.user.role === "admin" ? "/admin" : "/dashboard");
         },
         onError: (err: any) => {
           toast({
