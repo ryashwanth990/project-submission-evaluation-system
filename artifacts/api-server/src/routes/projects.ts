@@ -237,8 +237,8 @@ router.delete("/projects/:id", requireAuth, async (req: AuthRequest, res): Promi
 });
 
 router.post("/projects/:id/assign", requireAuth, async (req: AuthRequest, res): Promise<void> => {
-  if (req.user!.role !== "faculty") {
-    res.status(403).json({ error: "Only faculty can assign evaluators" });
+  if (req.user!.role !== "admin") {
+    res.status(403).json({ error: "Only admins can assign evaluators" });
     return;
   }
 
