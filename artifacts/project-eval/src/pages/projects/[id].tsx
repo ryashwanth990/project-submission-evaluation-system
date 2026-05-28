@@ -5,7 +5,6 @@ import {
   useUpdateProject,
   useAssignEvaluator,
   useCreateEvaluation,
-  useListFaculty, getListFacultyQueryKey,
   EvaluationInput
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -44,18 +43,12 @@ export default function ProjectDetail() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isFaculty = user?.role === "faculty";
+  const isAdmin = user?.role === "admin";
 
   const { data: project, isLoading } = useGetProject(projectId, {
     query: {
       enabled: !isNaN(projectId),
       queryKey: getGetProjectQueryKey(projectId)
-    }
-  });
-
-  const { data: facultyList } = useListFaculty({
-    query: {
-      enabled: isFaculty,
-      queryKey: getListFacultyQueryKey()
     }
   });
 
@@ -254,21 +247,7 @@ export default function ProjectDetail() {
                 {project.evaluatorId ? (
                   <p className="font-medium text-gray-900">{project.evaluatorName}</p>
                 ) : (
-                  <div className="space-y-2">
-                    <p className="text-amber-600 font-medium">Unassigned</p>
-                    {isFaculty && facultyList && (
-                      <Select onValueChange={handleAssignFaculty}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Assign faculty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {facultyList.map(f => (
-                            <SelectItem key={f.id} value={f.id.toString()}>{f.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
+                  <p className="text-amber-600 font-medium">Unassigned</p>
                 )}
               </div>
             </CardContent>
