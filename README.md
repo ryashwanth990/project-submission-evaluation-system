@@ -36,6 +36,7 @@ The **Project Submission & Evaluation System** is a full-stack web application d
 
 | Role | Email | Password |
 |---|---|---|
+| Admin | admin@sahyadri.edu.in | admin123 |
 | Faculty | shashidhar@sahyadri.edu.in | faculty123 |
 | Faculty | priya@sahyadri.edu.in | faculty456 |
 | Student | hithesh@student.sahyadri.edu.in | student123 |
