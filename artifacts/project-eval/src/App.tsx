@@ -14,6 +14,7 @@ import Projects from "@/pages/projects";
 import NewProject from "@/pages/projects/new";
 import ProjectDetail from "@/pages/projects/[id]";
 import Evaluations from "@/pages/evaluations";
+import AdminPortal from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
 setupApi();
@@ -23,13 +24,15 @@ function ProtectedRoute({ component: Component, roles }: { component: any, roles
   const { isAuthenticated, user } = useAuth();
   const [location, setLocation] = useLocation();
 
+  const defaultRedirect = user?.role === "admin" ? "/admin" : "/dashboard";
+
   useEffect(() => {
     if (!isAuthenticated) {
       setLocation("/login");
     } else if (roles && user && !roles.includes(user.role)) {
-      setLocation("/dashboard");
+      setLocation(defaultRedirect);
     }
-  }, [isAuthenticated, user, roles, setLocation]);
+  }, [isAuthenticated, user, roles, setLocation, defaultRedirect]);
 
   if (!isAuthenticated || (roles && user && !roles.includes(user.role))) {
     return null;
@@ -43,14 +46,14 @@ function ProtectedRoute({ component: Component, roles }: { component: any, roles
 }
 
 function PublicRoute({ component: Component }: { component: any }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [location, setLocation] = useLocation();
 
   useEffect(() => {
     if (isAuthenticated) {
-      setLocation("/dashboard");
+      setLocation(user?.role === "admin" ? "/admin" : "/dashboard");
     }
-  }, [isAuthenticated, setLocation]);
+  }, [isAuthenticated, user, setLocation]);
 
   if (isAuthenticated) return null;
 
@@ -64,7 +67,8 @@ function Router() {
       <Route path="/login" component={() => <PublicRoute component={Login} />} />
       <Route path="/register" component={() => <PublicRoute component={Register} />} />
       
-      <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
+      <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} roles={["student", "faculty"]} />} />
+      <Route path="/admin" component={() => <ProtectedRoute component={AdminPortal} roles={["admin"]} />} />
       <Route path="/projects" component={() => <ProtectedRoute component={Projects} />} />
       <Route path="/projects/new" component={() => <ProtectedRoute component={NewProject} roles={["student"]} />} />
       <Route path="/projects/:id" component={() => <ProtectedRoute component={ProjectDetail} />} />
