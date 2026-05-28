@@ -10,7 +10,7 @@ Academic Year: 2025-26 (IV Semester)
 | Hithesh Kundar | 4SF24CI061 |
 | Pavan D P | 4SF24CI116 |
 
-**Faculty In-charge:** Mr. Shashidhar
+**Faculty In-charge:** Mr. Ganaraj K
 
 ---
 
